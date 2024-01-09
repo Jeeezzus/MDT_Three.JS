@@ -3,15 +3,13 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
 
+//#region creation and controls
+
 // Create a scene
 const scene = new THREE.Scene();
 
+//camera and rederer
 const camera = new THREE.PerspectiveCamera(90, window.innerWidth / window.innerHeight, 0.1, 1000);
-
-
-
-
-// Import the canvas element
 const canvas = document.getElementById('canvas');
 
 // Create a WebGLRenderer and set its width and height
@@ -36,6 +34,72 @@ controls.target0 = new THREE.Vector3(0, 10, 0); // Orient the camera
 controls.reset();
 controls.update();
 
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+
+function onMouseClick(event) {
+  // Calculate mouse position in normalized device coordinates (-1 to +1) for both components
+  mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+  mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+  // Update the picking ray with the camera and mouse position
+  raycaster.setFromCamera(mouse, camera);
+
+  // Calculate objects intersecting the picking ray
+  const intersects = raycaster.intersectObjects(scene.children, true);
+
+  if (intersects.length > 0) {
+      // Assuming the first intersected object is the one you're interested in
+      onObjectSelected(intersects[0].object);
+  }
+}
+
+window.addEventListener('click', onMouseClick);
+
+const targetPosition = new THREE.Vector3(10, 10, 10); // Change to your desired position
+const moveDistance = 5; // The distance to move the object
+
+
+function onObjectSelected(object) {
+    console.log("Selected object name:", object.name);
+    if(object.name == "corps" & object.moved == false){
+      object.position.copy(new THREE.Vector3(object.position.x, object.position.y - 20, object.position.z));
+      object.moved = true;
+    }else if(object.name == "foot" & object.moved == false){
+      object.position.copy(new THREE.Vector3(object.position.x, object.position.y - 30, object.position.z));
+      object.moved = true;
+    }else if(object.name == "gcloche" & object.moved == false){
+      object.position.copy(new THREE.Vector3(object.position.x, object.position.y + 40, object.position.z));
+      object.moved = true;
+    }else if(object.name == "pcloche" & object.moved == false){
+      object.position.copy(new THREE.Vector3(object.position.x, object.position.y + 25, object.position.z));
+      object.moved = true;
+    }else if(object.name == "silcring" & object.moved == false){
+      object.position.copy(new THREE.Vector3(object.position.x, object.position.y + 7, object.position.z));
+      object.moved = true;
+    }else if(object.name == "top" & object.moved == false){
+      object.position.copy(new THREE.Vector3(object.position.x, object.position.y + 9, object.position.z));
+      object.moved = true;
+    }else if(object.name == "ice" & object.moved == false){
+      object.position.copy(new THREE.Vector3(object.position.x, object.position.y + 12, object.position.z));
+      object.moved = true;
+    }else if(object.name == "v4" & object.moved == false){
+      const rootObject = gltfRootObjects['v4']; // Access the stored root object
+
+      if (rootObject) {
+        rootObject.position.copy(new THREE.Vector3(
+            rootObject.position.x, 
+            rootObject.position.y, 
+            rootObject.position.z + 5
+        ));
+        }
+      object.moved = true;
+    }else
+    if(object.moved == false){
+    object.position.copy(targetPosition);
+    }
+}
+
 // Handle the window resize event
 window.addEventListener('resize', () => {
     // Update the camera
@@ -47,8 +111,16 @@ window.addEventListener('resize', () => {
     renderer.setPixelRatio(window.devicePixelRatio);
 });
 
+//#endregion
+
+//#region materials
 const plasticMaterial = new THREE.MeshPhongMaterial({
   color: 0xadd8e6, // Light blue color
+  shininess: 100   // Adjust this for the desired shininess
+});
+
+const plasticBlackMaterial = new THREE.MeshPhongMaterial({
+  color: 0x000000, // black color
   shininess: 100   // Adjust this for the desired shininess
 });
 
@@ -83,9 +155,12 @@ const iceMaterial = new THREE.MeshPhysicalMaterial({
 });
 iceMaterial.normalScale = new THREE.Vector2(1, 0.5); // Adjust x and y scale for intensity
 
+//#endregion
+
+//#region object spawning
+const gltfRootObjects = {};
 // Instantiate the loader
 const corps = new GLTFLoader();
-
 // Load a GLTF resource
 corps.load(
   // URL to the GLTF resource
@@ -96,6 +171,8 @@ corps.load(
     gltf.scene.traverse(function (node) {
       if (node.isMesh) {
           node.material = plasticMaterial;
+          node.name = "corps";
+          node.moved = false;
       }
   });
     scene.add( gltf.scene );
@@ -114,9 +191,9 @@ corps.load(
   }
 );
 
+
 // Instantiate the loader
 const foot = new GLTFLoader();
-
 // Load a GLTF resource
 foot.load(
   // URL to the GLTF resource
@@ -127,6 +204,8 @@ foot.load(
     gltf.scene.traverse(function (node) {
       if (node.isMesh) {
           node.material = plasticMaterial;
+          node.name = "foot";
+          node.moved = false;
       }
   });
   gltf.scene.rotation.y = Math.PI/1.55;
@@ -146,9 +225,9 @@ foot.load(
   }
 );
 
+
 // Instantiate the loader
 const gCloche = new GLTFLoader();
-
 // Load a GLTF resource
 gCloche.load(
   // URL to the GLTF resource
@@ -156,9 +235,12 @@ gCloche.load(
   
   // Called when the resource is loaded
   function ( gltf ) {
+    gltf.scene.name = "gcloche";
     gltf.scene.traverse(function (node) {
       if (node.isMesh) { // Replace with your mesh's name
           node.material = glassMaterial;
+          node.name = "gcloche";
+          node.moved = false;
       }
   });
     scene.add( gltf.scene );
@@ -180,7 +262,6 @@ gCloche.load(
 
 // Instantiate the loader
 const pCloche = new GLTFLoader();
-
 // Load a GLTF resource
 pCloche.load(
   // URL to the GLTF resource
@@ -191,6 +272,8 @@ pCloche.load(
     gltf.scene.traverse(function (node) {
       if (node.isMesh) { // Replace with your mesh's name
           node.material = glassMaterial;
+          node.name = "pcloche";
+          node.moved = false;
       }
   });
     scene.add( gltf.scene );
@@ -209,9 +292,9 @@ pCloche.load(
   }
 );
 
+
 // Instantiate the loader
 const silcRing = new GLTFLoader();
-
 // Load a GLTF resource
 silcRing.load(
   // URL to the GLTF resource
@@ -222,6 +305,8 @@ silcRing.load(
     gltf.scene.traverse(function (node) {
       if (node.isMesh) {
           node.material = plasticMaterial;
+          node.name = "silcring";
+          node.moved = false;
       }
   });
     scene.add( gltf.scene );
@@ -240,9 +325,9 @@ silcRing.load(
   }
 );
 
+
 // Instantiate the loader
 const top = new GLTFLoader();
-
 // Load a GLTF resource
 top.load(
   // URL to the GLTF resource
@@ -253,6 +338,42 @@ top.load(
     gltf.scene.traverse(function (node) {
       if (node.isMesh) {
           node.material = plasticMaterial;
+          node.name = "top";
+          node.moved = false;
+      }
+  });
+  
+    scene.add( gltf.scene );
+
+    // You might want to call the render or animate function here
+  },
+
+  // Called while loading is progressing
+  function ( xhr ) {
+    console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
+  },
+
+  // Called when loading has errors
+  function ( error ) {
+    console.log( 'An error happened' );
+  }
+);
+
+
+// Instantiate the loader
+const ice = new GLTFLoader();
+// Load a GLTF resource
+ice.load(
+  // URL to the GLTF resource
+  'models/freezer/ice.gltf',
+  
+  // Called when the resource is loaded
+  function ( gltf ) {
+    gltf.scene.traverse(function (node) {
+      if (node.isMesh) {
+          node.material = iceMaterial;
+          node.name = "ice";
+          node.moved = false;
       }
   });
   
@@ -273,23 +394,117 @@ top.load(
 );
 
 // Instantiate the loader
-const ice = new GLTFLoader();
-
+const ventil = new GLTFLoader();
 // Load a GLTF resource
-ice.load(
+ventil.load(
   // URL to the GLTF resource
-  'models/freezer/ice.gltf',
+  'models/freezer/V1.gltf',
   
   // Called when the resource is loaded
   function ( gltf ) {
     gltf.scene.traverse(function (node) {
       if (node.isMesh) {
-          node.material = iceMaterial;
+          node.material = plasticBlackMaterial;
+          node.name = "v1";
+          node.moved = false;
       }
   });
   
     scene.add( gltf.scene );
+    gltfRootObjects['v1'] = gltf.scene;
+    // You might want to call the render or animate function here
+  },
 
+  // Called while loading is progressing
+  function ( xhr ) {
+    console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
+  },
+
+  // Called when loading has errors
+  function ( error ) {
+    console.log( 'An error happened' );
+  }
+);
+// Load a GLTF resource
+ventil.load(
+  // URL to the GLTF resource
+  'models/freezer/V1.gltf',
+  
+  // Called when the resource is loaded
+  function ( gltf ) {
+    gltf.scene.traverse(function (node) {
+      gltf.scene.rotation.y = Math.PI/4;
+      if (node.isMesh) {
+          node.material = plasticBlackMaterial;
+          node.name = "v2";
+          node.moved = false;
+      }
+  });
+  
+    scene.add( gltf.scene );
+    gltfRootObjects['v2'] = gltf.scene;
+    // You might want to call the render or animate function here
+  },
+
+  // Called while loading is progressing
+  function ( xhr ) {
+    console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
+  },
+
+  // Called when loading has errors
+  function ( error ) {
+    console.log( 'An error happened' );
+  }
+);
+// Load a GLTF resource
+ventil.load(
+  // URL to the GLTF resource
+  'models/freezer/V1.gltf',
+  
+  // Called when the resource is loaded
+  function ( gltf ) {
+    gltf.scene.traverse(function (node) {
+      gltf.scene.rotation.y = Math.PI/2;
+      if (node.isMesh) {
+          node.material = plasticBlackMaterial;
+          node.name = "v3";
+          node.moved = false;
+      }
+  });
+  
+    scene.add( gltf.scene );
+    gltfRootObjects['v3'] = gltf.scene;
+    // You might want to call the render or animate function here
+  },
+
+  // Called while loading is progressing
+  function ( xhr ) {
+    console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
+  },
+
+  // Called when loading has errors
+  function ( error ) {
+    console.log( 'An error happened' );
+  }
+);
+// Load a GLTF resource
+ventil.load(
+  // URL to the GLTF resource
+  'models/freezer/V1.gltf',
+  
+  // Called when the resource is loaded
+  function ( gltf ) {
+    gltf.scene.traverse(function (node) {
+      gltf.scene.rotation.y = 3* Math.PI/4 ;
+      if (node.isMesh) {
+          node.material = plasticBlackMaterial;
+          node.name = "v4";
+          node.moved = false;
+      }
+  });
+  
+    scene.add( gltf.scene );
+    gltfRootObjects['v4'] = gltf.scene;
     // You might want to call the render or animate function here
   },
 
@@ -304,6 +519,133 @@ ice.load(
   }
 );
 
+// Load a GLTF resource
+ventil.load(
+  // URL to the GLTF resource
+  'models/freezer/V1.gltf',
+  
+  // Called when the resource is loaded
+  function ( gltf ) {
+    gltf.scene.traverse(function (node) {
+      gltf.scene.rotation.y = 4* Math.PI/4 ;
+      if (node.isMesh) {
+          node.material = plasticBlackMaterial;
+          node.name = "v5";
+          node.moved = false;
+      }
+  });
+  
+    scene.add( gltf.scene );
+    gltfRootObjects['v5'] = gltf.scene;
+    // You might want to call the render or animate function here
+  },
+
+  // Called while loading is progressing
+  function ( xhr ) {
+    console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
+  },
+
+  // Called when loading has errors
+  function ( error ) {
+    console.log( 'An error happened' );
+  }
+);
+// Load a GLTF resource
+ventil.load(
+  // URL to the GLTF resource
+  'models/freezer/V1.gltf',
+  
+  // Called when the resource is loaded
+  function ( gltf ) {
+    gltf.scene.traverse(function (node) {
+      gltf.scene.rotation.y = 5* Math.PI/4 ;
+      if (node.isMesh) {
+          node.material = plasticBlackMaterial;
+          node.name = "v6";
+          node.moved = false;
+      }
+  });
+  
+    scene.add( gltf.scene );
+    gltfRootObjects['v6'] = gltf.scene;
+    // You might want to call the render or animate function here
+  },
+
+  // Called while loading is progressing
+  function ( xhr ) {
+    console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
+  },
+
+  // Called when loading has errors
+  function ( error ) {
+    console.log( 'An error happened' );
+  }
+);
+// Load a GLTF resource
+ventil.load(
+  // URL to the GLTF resource
+  'models/freezer/V1.gltf',
+  
+  // Called when the resource is loaded
+  function ( gltf ) {
+    gltf.scene.traverse(function (node) {
+      gltf.scene.rotation.y = 6* Math.PI/4 ;
+      if (node.isMesh) {
+          node.material = plasticBlackMaterial;
+          node.name = "v7";
+          node.moved = false;
+      }
+  });
+  
+    scene.add( gltf.scene );
+    gltfRootObjects['v7'] = gltf.scene;
+    // You might want to call the render or animate function here
+  },
+
+  // Called while loading is progressing
+  function ( xhr ) {
+    console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
+  },
+
+  // Called when loading has errors
+  function ( error ) {
+    console.log( 'An error happened' );
+  }
+);
+// Load a GLTF resource
+ventil.load(
+  // URL to the GLTF resource
+  'models/freezer/V1.gltf',
+  
+  // Called when the resource is loaded
+  function ( gltf ) {
+    gltf.scene.traverse(function (node) {
+      gltf.scene.rotation.y = 7* Math.PI/4 ;
+      if (node.isMesh) {
+          node.material = plasticBlackMaterial;
+          node.name = "v8";
+          node.moved = false;
+      }
+  });
+  
+    scene.add( gltf.scene );
+    gltfRootObjects['v8'] = gltf.scene;
+    // You might want to call the render or animate function here
+  },
+
+  // Called while loading is progressing
+  function ( xhr ) {
+    console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
+  },
+
+  // Called when loading has errors
+  function ( error ) {
+    console.log( 'An error happened' );
+  }
+);
+//#endregion
+
+//#region lighting
 const ambientLight = new THREE.AmbientLight(0x9999ff, 0.5); // soft white light
 scene.add(ambientLight);
 
@@ -311,6 +653,9 @@ const light = new THREE.DirectionalLight(0xf2efd0, 2);
 light.position.set(-5, 10, -7.5);
 light.castShadow = true;
 scene.add(light);
+//#endregion
+
+//#region animate
 // Create the animation loop
 const animate = () => {
     // Call animate recursively
@@ -322,9 +667,8 @@ const animate = () => {
     // Render the scene
     renderer.render(scene, camera);
 }
+//#endregion
 
 // Call animate for the first time
 animate();
-
-scene.fog = new THREE.FogExp2(0xaaaaaa, 0.01);
 
