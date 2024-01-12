@@ -19,8 +19,21 @@
     </script>
 </head>
 <body>
-    <!-- This canvas is the one you will use to display your Three.js code. -->
-    <canvas id="canvas"></canvas>
+    <div id="content">
+        <div id="text-side">
+            <div class="title">Arctic Freezer</div>
+            <div class="description">Arctic Freezer is a visionary project blending art and environmental advocacy. Its centerpiece is a piece of Arctic ice, encapsulated in a glass bell, symbolizing the fragility of Earth's ecosystems. Inside the ice is a unique artifact: a human ear made from biodegradable collagen, containing DNA-encoded manifest for Earth. This represents the need to listen and respond to our planet's urgent messages.
+                <br>
+                The project's hardware ingeniously keeps the ice perpetually frozen, mirroring the challenge of preserving our changing world. Arctic Freezer serves as a stark reminder and an educational tool, urging viewers to reflect on their relationship with nature and advocate for sustainability and conservation. This exhibit is not just visually striking, but carries a profound message, emphasizing the importance of protecting our planet.</div>
+                <div class="parttitle">Manipulation:</div>
+                <div class="partdescription">Hold right click for moving the camera, hold left click for rotating the camera, click on a part so see it's name and description and move it</div>
+                <button id="reset-view" class="button-34" >Reset View</button>
+        </div>
+        <div id="canvas-side">
+            <canvas id="canvas"></canvas>
+            <div class="credits">Gauthier Gendreau X IFT</div>
+        </div>
+    </div>
 
     <!-- The import should happen after creating the other HTML elements since you will be importing them -->
     <script type="module" src="./script.js"></script>
