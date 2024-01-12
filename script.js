@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
+import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
 
 //#region creation and controls
 
@@ -110,6 +110,7 @@ controls.addEventListener('end', resetAutoRotate);
 
 
 let ventmoved = false;
+let fanmoved = false;
 function onObjectSelected(object) {
     console.log("Selected object name:", object.name);
     if(object.name == "corps" ){
@@ -266,6 +267,66 @@ if (object.title && object.desc) {
       partDescriptionElement.textContent = object.desc; // Set the description
   }
 }
+    }else if(object.name == "rad" ){
+      if(object.moved == false){
+            startAnimation(object, object.position.clone(),500,new THREE.Vector3(object.position.x, object.position.y - 4, object.position.z));
+            object.moved = true;
+      } else{
+      const startPosition = object.position.clone();
+                const endPosition = object.defPos; // The target position (origin)
+                startAnimation(object, startPosition, 500, endPosition);
+      object.moved = false;
+      }
+      if (object.title && object.desc) {
+        const partTitleElement = document.querySelector('.parttitle');
+        const partDescriptionElement = document.querySelector('.partdescription');
+      
+        if (partTitleElement) {
+            partTitleElement.textContent = object.title; // Set the title
+        }
+      
+        if (partDescriptionElement) {
+            partDescriptionElement.textContent = object.desc; // Set the description
+        }
+      }
+    }else if(object.name == "pel" ){
+      if(object.moved == false){
+            startAnimation(object, object.position.clone(),500,new THREE.Vector3(object.position.x, object.position.y +1, object.position.z));
+            object.moved = true;
+      } else{
+      const startPosition = object.position.clone();
+                const endPosition = object.defPos; // The target position (origin)
+                startAnimation(object, startPosition, 500, endPosition);
+      object.moved = false;
+      }
+      if (object.title && object.desc) {
+        const partTitleElement = document.querySelector('.parttitle');
+        const partDescriptionElement = document.querySelector('.partdescription');
+      
+        if (partTitleElement) {
+            partTitleElement.textContent = object.title; // Set the title
+        }
+      
+        if (partDescriptionElement) {
+            partDescriptionElement.textContent = object.desc; // Set the description
+        }
+      }
+    }else if(object.name == "fan" ){
+            if(fanmoved == false){
+                  startAnimation(gltfRootObjects['fan'], gltfRootObjects['fan'].position.clone(),500,new THREE.Vector3(0, -37, 0));
+                  fanmoved = true;
+            } else{
+            const startPosition = gltfRootObjects['fan'].position.clone();
+                      const endPosition = gltfRootObjects['fan'].defPos; // The target position (origin)
+                      startAnimation(gltfRootObjects['fan'], startPosition, 500, endPosition);
+                      fanmoved = false;
+            }
+            if (object.title && object.desc) {
+              const partTitleElement = document.querySelector('.parttitle');
+              const partDescriptionElement = document.querySelector('.partdescription');
+                  partTitleElement.textContent = "Main Fan"; // Set the title
+                  partDescriptionElement.textContent = "Pulls air out of the system, ensuring optimal airflow."; // Set the description
+            }
     }else if(object.name.includes("v")){
       if(ventmoved == false){
       startAnimation(gltfRootObjects['v2'], gltfRootObjects['v2'].position.clone(),500,new THREE.Vector3(
@@ -320,7 +381,10 @@ if (object.title && object.desc) {
             }
           }
           }
-        
+          const partTitleElement = document.querySelector('.parttitle');
+          const partDescriptionElement = document.querySelector('.partdescription');
+              partTitleElement.textContent = "Upper fans";
+              partDescriptionElement.textContent = "These fans are used to draw air into the system around the radiator, ensuring uniform cooling."; // Set the description
     }else
 
     if(object.moved == false & object.name.includes("v") == false){
@@ -431,6 +495,12 @@ const iceMaterial = new THREE.MeshPhysicalMaterial({
 });
 iceMaterial.normalScale = new THREE.Vector2(1, 0.5); // Adjust x and y scale for intensity
 
+const aluminiumMaterial = new THREE.MeshStandardMaterial({
+  color: 0xaaaaaa, // Aluminium color, can be adjusted
+  metalness: 0.8,  // Aluminium is a metal, so metalness is high
+  roughness: 0.5,  // Polished surface, so roughness is low
+  envMap: textureEquirec   // Environment map for reflections
+});
 
 function applyGlow(object) {
   if(object.name.includes("v") == false){
@@ -478,8 +548,8 @@ corps.load(
           node.moved = false;
           movableObjects.push(node);
           node.defPos = new THREE.Vector3(0, 0, 0);
-          node.title="Corps principal";
-          node.desc="Pièce principale de l'assemblage. Elle sert à maintenir toute la structure";
+          node.title="Main Body";
+          node.desc="The main part of the assembly. It serves to maintain the entire structure.";
           node.userData = {
             animating: false,
             moved: false,
@@ -524,7 +594,7 @@ foot.load(
 movableObjects.push(node);
 node.defPos = new THREE.Vector3(0, 0, 0);
           node.title="Base";
-          node.desc="Pièce soutenant l'assemblage. Elle sert à assurer un espace suffisant pour l'échapement de l'airdu radiateur";
+          node.desc="The piece supporting the assembly. It serves to ensure sufficient space for the escape of air from the radiator.";
       }
   });
   gltf.scene.rotation.y = Math.PI/1.55;
@@ -562,8 +632,8 @@ gCloche.load(
           node.moved = false;
 movableObjects.push(node);
 node.defPos = new THREE.Vector3(0, 0, 0);
-node.title="Cloche extérieur";
-          node.desc="Cloche en verre transparent servant de paroie isolante extérieur.";
+node.title="Outer Bell";
+          node.desc="A transparent glass bell serving as an external insulating wall.";
       }
   });
     scene.add( gltf.scene );
@@ -599,8 +669,8 @@ pCloche.load(
           node.moved = false;
 movableObjects.push(node);
 node.defPos = new THREE.Vector3(0, 0, 0);
-node.title="Cloche intérieur";
-          node.desc="Cloche en verre transparent servant de paroie isolante intérieur et de contenant pour la glace.";
+node.title="Inner Bell";
+          node.desc="A transparent glass bell serving as an internal insulating wall and container for ice.";
       }
   });
     scene.add( gltf.scene );
@@ -636,8 +706,8 @@ silcRing.load(
           node.moved = false;
 movableObjects.push(node);
 node.defPos = new THREE.Vector3(0, 0, 0);
-node.title="Support à silicone";
-          node.desc="Cette pièce en plastique permet de tenier et comprimer le joint silicone entre les cloches et le noyau en métal afin d'assurer une étanchéité au système";
+node.title="Silicone Holder";
+          node.desc="This plastic piece allows for holding and compressing the silicone seal between the bells and the metal core to ensure the system's watertightness.";
       }
   });
     scene.add( gltf.scene );
@@ -673,8 +743,8 @@ top.load(
           node.moved = false;
 movableObjects.push(node);
 node.defPos = new THREE.Vector3(0, 0, 0);
-node.title="Couvercle";
-          node.desc="Pièce décorative cachant le joint en silicone";
+node.title="Cover";
+          node.desc="A decorative piece that conceals the silicone joint.";
       }
   });
   
@@ -711,8 +781,8 @@ ice.load(
           node.moved = false;
 movableObjects.push(node);
 node.defPos = new THREE.Vector3(0, 0, 0);
-node.title="Glace";
-          node.desc="Dans cette glace sera stockée une oreille en collagène refermant un manifeste pour la terre, encodé dans le l'ADN";
+node.title="Ice";
+          node.desc="In this ice will be stored a collagen ear enclosing a manifesto for the earth, encoded in the DNA.";
       }
   });
   
@@ -731,6 +801,131 @@ node.title="Glace";
     console.log( 'An error happened' );
   }
 );
+
+// Instantiate the loader
+const radiator = new GLTFLoader();
+// Load a GLTF resource
+radiator.load(
+  // URL to the GLTF resource
+  'models/freezer/rad.gltf',
+  
+  // Called when the resource is loaded
+  function ( gltf ) {
+    gltf.scene.traverse(function (node) {
+      if (node.isMesh) {
+          node.material = aluminiumMaterial;
+          node.name = "rad";
+          node.moved = false;
+movableObjects.push(node);
+node.defPos = new THREE.Vector3(0, 0, 0);
+node.title="Radiator";
+          node.desc="Dissipates Peltier's heat using air.";
+      }
+  });
+  
+    scene.add( gltf.scene );
+    gltf.scene.position.copy(new THREE.Vector3(0, 4.5, 0));
+    // You might want to call the render or animate function here
+  },
+
+  // Called while loading is progressing
+  function ( xhr ) {
+    console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
+  },
+
+  // Called when loading has errors
+  function ( error ) {
+    console.log( 'An error happened' );
+  }
+);
+
+// Instantiate the loader
+const fan = new GLTFLoader();
+// Load a GLTF resource
+fan.load(
+  // URL to the GLTF resource
+  'models/freezer/fan.gltf',
+  
+  // Called when the resource is loaded
+  function ( gltf ) {
+
+    gltf.scene.traverse(function (node) {
+      if (node.isMesh) {
+          node.material = aluminiumMaterial;
+          node.name = "fan";
+          node.moved = false;
+movableObjects.push(node);
+node.defPos = new THREE.Vector3(0, 0, 0);
+node.title="Main Fan";
+          node.desc="Pulls air out of the system, ensuring optimal airflow.";
+      }
+  });
+  
+    scene.add( gltf.scene );
+    gltfRootObjects['fan'] = gltf.scene;
+    gltf.scene.position.copy(new THREE.Vector3(0, -30, 0));
+    movableObjects.push(gltf.scene);
+    gltf.scene.defPos = new THREE.Vector3(0, -30, 0);
+    // You might want to call the render or animate function here
+  },
+
+  // Called while loading is progressing
+  function ( xhr ) {
+    console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
+  },
+
+  // Called when loading has errors
+  function ( error ) {
+    console.log( 'An error happened' );
+  }
+);
+
+// Instantiate the loader
+const objLoader = new OBJLoader();
+
+// Load an OBJ resource
+objLoader.load(
+    // URL to the OBJ resource
+    'models/freezer/Module Peletier v1.obj', // Replace with the path to your OBJ file
+
+    // Called when the resource is loaded
+    function (obj) {
+        // Add the loaded object to the scene
+        scene.add(obj);
+
+        // Perform any additional actions with the loaded object
+        // For example, setting position, scaling, rotation, etc.
+        obj.position.set(0, 7.5, 0);
+        obj.scale.set(0.1, 0.1, 0.1);
+        obj.rotation.set(Math.PI/2, 0, 0);
+
+        // Optionally, you can traverse the object and set materials or other properties
+        obj.traverse(function (child) {
+            if (child.isMesh) {
+                // Set material, etc.
+                child.material = new THREE.MeshStandardMaterial({ color: 0xf0f0f0 });
+                child.material = aluminiumMaterial;
+                child.name = "pel";
+                child.moved = false;
+movableObjects.push(child);
+child.defPos = new THREE.Vector3(-1, 7.5, 0);
+child.title="Peltier Module";
+child.desc="Produces cold on one side and heat on the other when supplied with electricity. This component is used to extract energy from the ice.";
+            }
+        });
+    },
+
+    // Called while loading is progressing
+    function (xhr) {
+        console.log(`OBJ Loading: ${Math.round((xhr.loaded / xhr.total * 100))}% loaded`);
+    },
+
+    // Called when loading has errors
+    function (error) {
+        console.error('An error happened during OBJ loading:', error);
+    }
+);
+
 
 // Instantiate the loader
 const ventil = new GLTFLoader();
@@ -1066,3 +1261,4 @@ const animate = () => {
 animate();
 onWindowResize();
 
+//AHAH
